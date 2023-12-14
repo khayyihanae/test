@@ -1,0 +1,7 @@
+1 Macbook pro 1200 199 100 26
+2 Macbook air 1000 498 200 2
+3 Asus Rog 1100 239 200 57
+4 Iphone pro 999 284 200 0
+5 Iphone normal 499 230 220 0
+6 Ipad pro 2000 998 60 9
+7 Sumsung ultra 1100 295 200 0

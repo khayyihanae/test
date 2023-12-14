@@ -1,0 +1,127 @@
+void ConfirCommande() {
+    FILE* f = fopen("commande.txt", "rt");
+    FILE* fichierHC = fopen("HC.txt", "a");
+    FILE* p=fopen("EtatC","a+");
+    int quantiteeAjoutee;
+    Produit P;
+    //EtatC=Etat commande
+    if (f == NULL||fichierHC==NULL) {
+        printf("Le panier est vide. (Veuillez taper entrer pour revenir au menu.)\n");
+        getch();
+        printf("\n");
+        TraiterChoixUtilisateur();
+    }
+    if (isFichierCommandeVide(f)) {
+        printf("Le panier est vide.\n");
+        fclose(f);
+    }
+
+    time_t t;
+    struct tm *info;
+    time(&t);
+    info = localtime(&t);
+     if (CommandeConfirme()) {
+        printf("La commande a déjà été confirmée. Vous ne pouvez pas confirmer une deuxième fois.\n");
+        printf("Entrer un bouton pour revenir au <MENU>.\n");
+        fclose(f);
+        fclose(p);
+        fclose(fichierHC);
+        getch();
+        TraiterChoixUtilisateur();
+    }
+    rewind(f);
+    system("cls");
+    // Affichage du contenu du fichier commande
+printf("\n***************************** CONTENU DE LA COMMANDE *****************************\n");
+    printf("%-4s%-25s%-10s%-8s\n", "ID", "Nom et type", "Prix", "Quantité");
+    printf("-------------------------------------------------------------------------------\n");
+
+    while (fscanf(f, "%d%s%s%d%d", &P.id, P.nom, P.prenom, &P.prix, &quantiteeAjoutee) != EOF) {
+        printf("%-4d%-25s%-10d%-8d\n", P.id, strcat(strcat(P.nom, " "), P.prenom), P.prix, quantiteeAjoutee);
+
+        // Mettre à jour les quantités dans les fichiers de catégorie correspondants
+        updateQuantiCatego("categorie1.txt", P.id, P.nom, quantiteeAjoutee);
+        updateQuantiCatego("categorie2.txt", P.id, P.nom, quantiteeAjoutee);
+        updateQuantiCatego("categorie3.txt", P.id, P.nom, quantiteeAjoutee);
+    }
+
+    printf("*********************************************************************************\n");
+    // Questionner le client s'il veut confirmer sa commande
+    int choix;
+    printf("Voulez-vous confirmer votre commande ?\n");
+    printf("1 - Oui\n");
+    printf("2 - Non\n");
+    choix = getIntInput();
+
+    if (choix == 1) {
+        // Affichage de la facture avec le total
+        rewind(f);  // Rembobiner le fichier pour le lire à nouveau depuis le début
+        double total = 0;
+        double A;
+        system("cls");
+printf("\n****************************** FACTURE ******************************\n");
+printf("Date : %02d/%02d/%d %02d:%02d:%02d\n", info->tm_mday, info->tm_mon + 1, info->tm_year + 1900,
+       info->tm_hour, info->tm_min, info->tm_sec);
+
+printf("%-20s%-15s%-10s%-10s%-10s\n", "Nom et type", "Prix unitaire", "Quantité", "Sous-total", "Total");
+printf("--------------------------------------------------------------------\n");
+
+while (fscanf(f, "%d%s%s%d%d", &P.id, P.nom, P.prenom, &P.prix, &quantiteeAjoutee) != EOF) {
+    double sousTotal = P.prix * quantiteeAjoutee;
+    printf("%-20s%-15d%-10d%-10.2f%.2f\n", strcat(strcat(P.nom, " "), P.prenom), P.prix, quantiteeAjoutee, sousTotal, total);
+
+    total += sousTotal;
+    A = total + 10;
+}
+
+printf("********************************************************************\n");
+
+        printf("Total à payer : %.2f$\n", total);
+        getch();
+        printf("Total + Livraison =%.2f$ (10$ pour la livraison)\n",A);
+        int numeroCommande = getNumeroCommande();
+        fprintf(fichierHC, "%d\t%02d/%02d/%d %02d:%02d:%02d\t%.2f $\n",numeroCommande, info->tm_mday, info->tm_mon + 1,info->tm_year +1900, info->tm_hour, info->tm_min, info->tm_sec,A);
+        fprintf(p, " %02d/%02d/%d %02d:%02d:%02d\t", info->tm_mday, info->tm_mon + 1,info->tm_year +1900, info->tm_hour, info->tm_min, info->tm_sec);
+        printf("Confirmation de commande en cours\n");
+        fflush(stdout);
+        for (int i = 0; i < 5; ++i) {
+            #ifdef _WIN32
+                Sleep(1000);  // En millisecondes
+            #else
+                sleep(1);     // En secondes
+            #endif
+            printf(".");
+            fflush(stdout);
+        }
+        printf("\nVotre commande a été confirmée avec succes!\n");
+        // Enregistrement de la date de confirmation dans le fichier "EtatCommande"
+        fprintf(p, "%02d/%02d/%d %02d:%02d:%02d\t", info->tm_mday, info->tm_mon + 1, info->tm_year + 1900,info->tm_hour, info->tm_min, info->tm_sec);
+         // Calcul de la date de réception (date de confirmation + 2 jours)
+        time_t dateReception = mktime(info) + 2 * 24 * 60 * 60;  // 2 jours en secondes
+        struct tm *dateReceptionInfo = localtime(&dateReception);
+
+        // Enregistrement de la date de réception dans le fichier "EtatCommande"
+        fprintf(p, " %02d/%02d/%d %02d:%02d:%02d\t\n",dateReceptionInfo->tm_mday, dateReceptionInfo->tm_mon + 1, dateReceptionInfo->tm_year + 1900,dateReceptionInfo->tm_hour, dateReceptionInfo->tm_min, dateReceptionInfo->tm_sec);
+        if (p != NULL) {
+            fprintf(p, "1");
+            fclose(p);
+        }
+    } else if (choix == 2) {
+        // Demander si le client veut supprimer sa commande
+        int supprimerCommande;
+        printf("Voulez-vous supprimer votre commande ?\n");
+        printf("1 - Oui\n");
+        printf("2 - Non\n");
+        supprimerCommande = getIntInput();
+
+        if (supprimerCommande == 1) {
+            fclose(f);
+            remove("commande.txt");
+            printf("Votre commande a été supprimée.\n");
+        }
+    }
+
+    fclose(f);
+    fclose(p);
+    fclose(fichierHC);
+}
