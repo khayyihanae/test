@@ -4,6 +4,7 @@
 
 //Partie Gestion client ;
 ///*********************************************
+
 ///***********************************************
 typedef struct {
 int num_maison;
@@ -69,8 +70,34 @@ typedef struct {
     int nmbr_art;
     Produith *produith;
 } historique;
-
-
+///*****************************************************
+void entete(){
+    int cni;
+    char passwd[20];
+    char nom[20];
+    char prenom[20];
+    Client client;
+FILE* tmpo=fopen("tmp.txt","rt");
+FILE* file_c=fopen("Client.txt","rt");
+if(tmpo==NULL || file_c==NULL){
+    printf("Error\n");
+    exit(1);
+}
+fscanf(tmpo,"%d%s",&cni,passwd);
+while(fscanf(file_c, "%d %s %s %d %s %s %s %s", &client.CNI, client.nom, client.prenom, &client.adress.num_maison,client.adress.quartier, client.adress.ville, client.numero, client.passwd) == 8){
+       if(cni==client.CNI){
+        strcpy(nom,client.nom);
+        strcpy(prenom,client.prenom);
+       }
+}
+fclose(tmpo);
+fclose(file_c);
+    printf("\n");
+    printf(" +-----------------------------------------------------------------------+      \n");
+    printf("     \033[1;34mNOZAMA\033[0m                                  \033[1;33m%s %s\033[0m            \n",nom,prenom);
+    printf(" +-----------------------------------------------------------------------+      \n");
+}
+///***********************************************************************
 FILE *  file_Historique(){
 FILE * file =fopen("historique_comm.dat", "a+b");
 if (file == NULL) {
@@ -78,7 +105,37 @@ if (file == NULL) {
         exit(0);}
         return file ;
 }
+//*************************************************************
+void affichageChargement() {
+    int i;
 
+
+    for (i = 0; i < 20; i++) {
+        printf("\033[1;34m%c\033[0m", '|'); // Barre de chargement
+        fflush(stdout);
+        usleep(100000*0.5); // Pause de 100 millisecondes
+
+        printf("\b"); // Efface le dernier caract re
+        printf("\033[1;34m%c\033[0m", '/');
+        fflush(stdout);
+        usleep(100000*0.5);
+
+        printf("\b");
+        printf("\033[1;34m%c\033[0m", '-');
+        fflush(stdout);
+        usleep(100000*0.5);
+
+        printf("\b");
+        printf("\033[1;34m%c\033[0m", '\\');
+        fflush(stdout);
+        usleep(100000*0.5);
+
+        printf("\b");
+    }
+
+
+}
+//************************************************************
 void obtenirDateActuelle(char date[20]) {
     time_t tempsActuel;
     struct tm *infoTemps;
@@ -188,7 +245,7 @@ void printOption(const char *option) {
 //*********************************************
 void MENU() {
     int borderLength = 34; // Ajustez la longueur en fonction de la taille du texte le plus long
-
+    entete();
     printBorder(borderLength);
     printf("*           MENU           *\n");
     printBorder(borderLength);
@@ -244,7 +301,6 @@ void AjouterProd() {
     int articleexiste =0;
     NProd A;
     int found = 0;
-
      FILE *commandeFile ;
     do {
     printf("********************************************\n");
@@ -357,36 +413,6 @@ while (fscanf(categorieFile, "%d %s %s %d %d %d %d\n", &P.id, P.nom, P.prenom, &
         }
 
     } while (1);
-}
-//**********************************************
-void traiterChoixUtilisateur() {
-    MENU();
-    int choix;
-    printf("Entrer votre choix:");
-    scanf("%d",&choix);
-    switch (choix) {
-        case 1:
-            system("cls");
-            printf("Vous avez choisi de faire une commande.\n");
-            OptionCommande();
-            // Appeler la fonction correspondante pour traiter la commande
-            break;
-        case 2:
-            printf("Vous avez choisi de v�rifier l'�tat de votre commande.\n");
-            // Appeler la fonction correspondante pour afficher l'�tat de la commande
-            break;
-        case 3:
-            printf("Vous avez choisi de recevoir votre facture.\n");
-            // Appeler la fonction correspondante pour g�n�rer la facture
-            break;
-        case 4:
-            printf("Vous avez choisi de signaler un probl�me.\n");
-            // Appeler la fonction correspondante pour traiter la r�clamation
-            break;
-        default:
-            printf("Choix invalide. Veuillez choisir une option valide.\n");
-            break;
-    }
 }
 //**********************************************
 bool VerifDisponibiliteQuantiteCategorie(const char *categoryFilePath, const char *nom, const char *prenom, int quantite) {
@@ -799,15 +825,8 @@ printf("------------------------------------------------------------------------
 
 
         printf("Confirmation de commande en cours\n");
-        fflush(stdout);
-        for (int i = 0; i < 5; ++i) {
-
-                sleep(1);
-
-            printf(".");
-            fflush(stdout);
-        }
-        printf("\nCommande confirmee avec succes!\n");
+        affichageChargement();
+        printf("\033[1;32m Commande confirmee avec succes !\033[0m\n");
         // Enregistrement de la date de confirmation dans le fichier "EtatCommande"
 
 
@@ -855,7 +874,7 @@ fclose(file_commande);
         }
     }
 
-
+getch();
 system("cls");
 TraiterChoixUtilisateur();
 }
@@ -891,8 +910,6 @@ void UpdateQuantiCatego(const char *categoryFile, int id,char *nom, int quantity
     }
 
 }
-//**********************************************************
-
 //************************************************************
 void GererCommande() {
     int choix;
@@ -906,26 +923,32 @@ historique his ;
         switch (choix) {
             case 1:{
                 system("cls");
+                entete();
                printf("\033[1;34mVous avez choisi l'option Ajouter un Produit :\n\033[0m");
                  AjouterProd();
                 break;}
             case 2:{
+                system("cls");
+                entete();
                 printf("\033[1;34mVous avez choisi l'option Modification d'un Produit :\n\033[0m");
                 ModifierArticle();
                 break;}
             case 3:{
                 system("cls");
+                entete();
                 printf("\033[1;34mVous avez choisi l'option supprimer un Produit :\n\033[0m");
                 supprimerProduit();
                 break;}
             case 4:{
                 system("cls");
+                entete();
                 printf("\033[1;31mVous avez choisi l'option Confirmation de votre commande :\n\033[0m");
                 ConfirCommande(&his);
                 break;
                 }
             case 5:{
                 system("cls");
+                entete();
                 TraiterChoixUtilisateur();  // Revenir au menu principal
                 break;
                 }
@@ -952,7 +975,43 @@ else{
 fclose(tempo);
 }
 //**********************************************************************************
+int comparerHeures(const char *heure1, const char *heure2) {
+    int heures1, minutes1, secondes1;
+    int heures2, minutes2, secondes2;
 
+    // Utiliser sscanf pour extraire les composantes des deux heures
+    if (sscanf(heure1, "%d:%d:%d", &heures1, &minutes1, &secondes1) != 3 ||
+        sscanf(heure2, "%d:%d:%d", &heures2, &minutes2, &secondes2) != 3) {
+        // En cas d'erreur dans le format des heures
+        printf("Format d'heure incorrect.\n");
+        return 0; // Comparaison impossible
+    }
+
+    // Comparaison des heures
+    if (heures1 < heures2) {
+        return -1; // heure1 est antérieure à heure2
+    } else if (heures1 > heures2) {
+        return 1;  // heure1 est postérieure à heure2
+    }
+
+    // Si les heures sont égales, comparer les minutes
+    if (minutes1 < minutes2) {
+        return -1; // heure1 est antérieure à heure2
+    } else if (minutes1 > minutes2) {
+        return 1;  // heure1 est postérieure à heure2
+    }
+
+    // Si les minutes sont égales, comparer les secondes
+    if (secondes1 < secondes2) {
+        return -1; // heure1 est antérieure à heure2
+    } else if (secondes1 > secondes2) {
+        return 1;  // heure1 est postérieure à heure2
+    }
+
+    // Les heures sont égales
+    return 0;
+}
+//**********************************************************************************
 void Etatcommande(){
 FILE* histo=fopen("historique_comm.txt","r");
 FILE* tmpo=fopen("tmp.txt","rt");
@@ -978,9 +1037,22 @@ int compteur =0 ;
         printf("Prix Total       : %d$\n", his.prixtotal);
         printf("Date Confirmation: %s %s\n", his.date_com1, his.date_com2);
         printf("Date Reception   : %s %s\n", his.dat_final1, his.dat_final2);
+                char dateacc1[40];
+        char date1[20] ;
+            obtenirDateActuelle(dateacc1);
+            snprintf(date1, sizeof(date1), "%s", dateacc1);
+            char partied1[20], partied2[20];
+            sscanf(date1, "%[^|]|%s", partied1, partied2);
 
+   int resultat = comparerHeures(his.dat_final2, partied2);
 
-        printf("\n\033[1;34m  ========================================\033[0m\n");
+    if (resultat < 0) {
+        printf("La commande %d est \033[1;34m livree \033[0m\n",his.id_com);
+    } else  {
+        printf("LA commande %d est \033[1;34m en cours de livraison \033[0m \n", his.id_com );
+    }
+
+        printf("\n\033[1;34m ========================================\033[0m\n");
         printf("\033[1;34m  Liste des produits dans la commande %d :\033[0m\n",his.id_com);
         printf("\033[1;34m  =========================================\033[0m\n");
   while(i<his.nmbr_art){
@@ -1013,11 +1085,7 @@ int compteur =0 ;
 fgets(ligne,255,histo);
     i++;
 }
-
-
     }
-
-
     }
  printf(" \nvous aves effectuer : %d commandes dans votre Historique\n  ",compteur+1);
 
@@ -1208,8 +1276,6 @@ void ReclamaProb() {
 //*************************************************************************************
 //************************************************************
 void TraiterChoixUtilisateur() {
-    getchar();
-     getchar();
      system("cls");
     MENU();
     int choix;
@@ -1218,19 +1284,23 @@ void TraiterChoixUtilisateur() {
     switch (choix) {
         case 1:
             system("cls");
+            entete();
             GererCommande();
             break;
         case 2:
             system("cls");
+            entete();
             Etatcommande();
 
             break;
         case 3:
             system("cls");
+            entete();
             ReclamaProb();
             break;
         case 4:
             system("cls");
+            entete();
             FEEDBACK();
             break;
         case 5:

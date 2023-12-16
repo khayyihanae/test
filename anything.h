@@ -1254,6 +1254,7 @@ void Login() {
         printf("\nConnexion succes.\n");
         // Appeler la fonction MENU
         Tmp(CNI,passwd);
+        getchar();
         TraiterChoixUtilisateur();
     } else {
         printf("\nUsername or password incorrect.\n");
